@@ -13,4 +13,12 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="frontend\src\app\bookings\" />
+    <None Remove="Models\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="frontend\src\app\bookings\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
 </Project>
