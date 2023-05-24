@@ -9,7 +9,7 @@ using Epic_Booking.Models;
 
 namespace Epic_Booking.Controllers
 {
-    [Route("api/bookings")]
+    [Route("bookings")]
     public class BookingController : Controller
     {
         [HttpGet]
