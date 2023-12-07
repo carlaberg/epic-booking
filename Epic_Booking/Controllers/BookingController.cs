@@ -4,14 +4,23 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Epic_Booking.Models;
+using Epic_Booking.Data;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Epic_Booking.Controllers
 {
+
     [Route("bookings")]
     public class BookingController : Controller
     {
+        private readonly ApplicationDbContext _db;
+
+        public BookingController(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
         [HttpGet]
         public List<Booking> GetBookings()
         {

@@ -1,6 +1,13 @@
-﻿var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+﻿using Epic_Booking.Data;
+using Microsoft.EntityFrameworkCore;
+
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<ApplicationDbContext>(option => {
+    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
+});
 
 builder.Services.AddCors(options =>
 {
