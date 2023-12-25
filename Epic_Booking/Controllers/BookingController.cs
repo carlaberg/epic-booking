@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Epic_Booking.Models;
-using Epic_Booking.Data;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using Epic_Booking.Models.Dto;
+using AutoMapper;
+using MagicVilla_VillaAPI.Models;
+using System.Net;
+using Epic_Booking.Repository.IBookingRepostiory;
 
 namespace Epic_Booking.Controllers
 {
@@ -14,46 +12,126 @@ namespace Epic_Booking.Controllers
     [Route("bookings")]
     public class BookingController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IBookingRepository _bookingRepo;
+        private readonly IMapper _mapper;
+        protected APIResponse _response;
 
-        public BookingController(ApplicationDbContext db)
+        public BookingController(IBookingRepository bookingRepo, IMapper mapper)
         {
-            _db = db;
+            _bookingRepo = bookingRepo;
+            _mapper = mapper;
+            _response = new();
         }
 
         [HttpGet]
-        public List<Booking> GetBookings()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<APIResponse>> GetAllBookings()
         {
-            return new List<Booking> {
-                new Booking { Id = 123, Title = "Booking 1", Start = DateTime.Now, End = DateTime.Now.AddHours(2) },
-                new Booking { Id = 456, Title = "Booking 2", Start = DateTime.Now.AddDays(1), End = DateTime.Now.AddDays(1).AddHours(2) }
-            };
+            try
+            {
+                List<Booking> bookings = await _bookingRepo.GetAllAsync();
+
+                _response.Result = bookings;
+                _response.StatusCode = HttpStatusCode.OK;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages
+                     = new List<string>() { ex.ToString() };
+            }
+            return _response;
+        }        
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<APIResponse>> CreateBooking([FromBody] BookingCreateDTO createDTO)
+        {
+            try
+            {
+                if (createDTO == null)
+                {
+                    return BadRequest(createDTO);
+                }
+                Booking booking = _mapper.Map<Booking>(createDTO);
+
+                await _bookingRepo.CreateAsync(booking);
+                _response.Result = _mapper.Map<BookingDTO>(booking);
+                _response.StatusCode = HttpStatusCode.Created;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages
+                     = new List<string>() { ex.ToString() };
+            }
+            return _response;
         }
 
-        //// GET api/values/5
-        //[HttpGet("{id}")]
-        //public string Get(int id)
-        //{
-        //    return "value";
-        //}
+        [HttpPut("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<APIResponse>> UpdateBooking(int id, [FromBody] BookingUpdateDTO updateDTO)
+        {
+            try
+            {
+                if (updateDTO == null || id != updateDTO.Id)
+                {
+                    return BadRequest();
+                }
 
-        //// POST api/values
-        //[HttpPost]
-        //public void Post([FromBody]string value)
-        //{
-        //}
+                Booking model = _mapper.Map<Booking>(updateDTO);
 
-        //// PUT api/values/5
-        //[HttpPut("{id}")]
-        //public void Put(int id, [FromBody]string value)
-        //{
-        //}
+                await _bookingRepo.UpdateAsync(model);
+                _response.StatusCode = HttpStatusCode.NoContent;
+                _response.IsSuccess = true;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages
+                     = new List<string>() { ex.ToString() };
+            }
+            return _response;
+        }
 
-        //// DELETE api/values/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
-        //{
-        //}
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult<APIResponse>> DeleteBooking(int id)
+        {
+            try
+            {
+                if (id == 0)
+                {
+                    return BadRequest();
+                }
+                var booking = await _bookingRepo.GetByIdAsync(id);
+                if (booking == null)
+                {
+                    return NotFound();
+                }
+                await _bookingRepo.DeleteAsync(booking);
+                _response.StatusCode = HttpStatusCode.NoContent;
+                _response.IsSuccess = true;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages
+                     = new List<string>() { ex.ToString() };
+            }
+            return _response;
+        }        
     }
 }
 

@@ -20,11 +20,11 @@ interface ApiFetcherProps {
   body?: any;
 }
 
-export const apiFetcher = async ({
+export const apiFetcher = async <T = any>({
   path,
   method,
   body,
-}: ApiFetcherProps): Promise<any> => {
+}: ApiFetcherProps): Promise<T> => {
   let options: RequestInit = {
     headers: {
       // Authorization: `Bearer ${token}`,

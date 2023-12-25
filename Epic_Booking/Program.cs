@@ -1,4 +1,7 @@
-﻿using Epic_Booking.Data;
+﻿using Epic_Booking;
+using Epic_Booking.Data;
+using Epic_Booking.Repository;
+using Epic_Booking.Repository.IBookingRepostiory;
 using Microsoft.EntityFrameworkCore;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -8,6 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(option => {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
+builder.Services.AddAutoMapper(typeof(MappingConfig));
+
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 
 builder.Services.AddCors(options =>
 {
