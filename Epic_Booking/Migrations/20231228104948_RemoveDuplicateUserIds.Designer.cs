@@ -4,6 +4,7 @@ using Epic_Booking.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Epic_Booking.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231228104948_RemoveDuplicateUserIds")]
+    partial class RemoveDuplicateUserIds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -99,9 +102,8 @@ namespace Epic_Booking.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CreatorId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("CreatorId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("End")
                         .HasColumnType("datetime2");
@@ -116,6 +118,24 @@ namespace Epic_Booking.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Bookings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 123,
+                            CreatorId = 0,
+                            End = new DateTime(2023, 12, 28, 13, 49, 48, 109, DateTimeKind.Local).AddTicks(5230),
+                            Start = new DateTime(2023, 12, 28, 11, 49, 48, 109, DateTimeKind.Local).AddTicks(5180),
+                            Title = "Booking 1"
+                        },
+                        new
+                        {
+                            Id = 456,
+                            CreatorId = 0,
+                            End = new DateTime(2023, 12, 29, 13, 49, 48, 109, DateTimeKind.Local).AddTicks(5240),
+                            Start = new DateTime(2023, 12, 29, 11, 49, 48, 109, DateTimeKind.Local).AddTicks(5240),
+                            Title = "Booking 2"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

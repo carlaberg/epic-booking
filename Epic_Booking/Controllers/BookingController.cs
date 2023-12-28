@@ -5,6 +5,8 @@ using AutoMapper;
 using MagicVilla_VillaAPI.Models;
 using System.Net;
 using Epic_Booking.Repository.IBookingRepostiory;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Epic_Booking.Controllers
 {
@@ -15,12 +17,14 @@ namespace Epic_Booking.Controllers
         private readonly IBookingRepository _bookingRepo;
         private readonly IMapper _mapper;
         protected APIResponse _response;
+        private readonly IAuthorizationService _authorizationService;
 
-        public BookingController(IBookingRepository bookingRepo, IMapper mapper)
+        public BookingController(IBookingRepository bookingRepo, IMapper mapper, IAuthorizationService authorizationService)
         {
             _bookingRepo = bookingRepo;
             _mapper = mapper;
             _response = new();
+            _authorizationService = authorizationService;
         }
 
         [HttpGet]
@@ -42,7 +46,7 @@ namespace Epic_Booking.Controllers
                      = new List<string>() { ex.ToString() };
             }
             return _response;
-        }        
+        }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -57,6 +61,15 @@ namespace Epic_Booking.Controllers
                     return BadRequest(createDTO);
                 }
                 Booking booking = _mapper.Map<Booking>(createDTO);
+
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userId == null)
+                {
+                    return Forbid();
+                }
+
+                booking.CreatorId = userId;
 
                 await _bookingRepo.CreateAsync(booking);
                 _response.Result = _mapper.Map<BookingDTO>(booking);
@@ -84,9 +97,25 @@ namespace Epic_Booking.Controllers
                     return BadRequest();
                 }
 
-                Booking model = _mapper.Map<Booking>(updateDTO);
+                var booking = await _bookingRepo.GetByIdAsync(updateDTO.Id);
 
-                await _bookingRepo.UpdateAsync(model);
+                if (booking == null)
+                {
+                    return NotFound();
+                }
+
+                var authorizationResult = await _authorizationService.AuthorizeAsync(User, booking, "OwnerPolicy");
+
+                if (!authorizationResult.Succeeded)
+                {
+                    return Forbid();
+                }
+
+                booking.Start = updateDTO.Start;
+                booking.End = updateDTO.End;
+                booking.Title = updateDTO.Title;
+
+                await _bookingRepo.UpdateAsync(booking);
                 _response.StatusCode = HttpStatusCode.NoContent;
                 _response.IsSuccess = true;
                 return Ok(_response);
@@ -119,6 +148,14 @@ namespace Epic_Booking.Controllers
                 {
                     return NotFound();
                 }
+
+                var authorizationResult = await _authorizationService.AuthorizeAsync(User, booking, "OwnerPolicy");
+
+                if (!authorizationResult.Succeeded)
+                {
+                    return Forbid();
+                }
+
                 await _bookingRepo.DeleteAsync(booking);
                 _response.StatusCode = HttpStatusCode.NoContent;
                 _response.IsSuccess = true;
@@ -131,7 +168,7 @@ namespace Epic_Booking.Controllers
                      = new List<string>() { ex.ToString() };
             }
             return _response;
-        }        
+        }
     }
 }
 

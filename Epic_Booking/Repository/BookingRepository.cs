@@ -36,7 +36,7 @@ namespace Epic_Booking.Repository
 
         public async Task<Booking> GetByIdAsync(int id)
         {
-            return await _db.Bookings.FirstOrDefaultAsync(booking => booking.Id == id);
+            return await _db.Bookings.AsNoTracking().FirstOrDefaultAsync(booking => booking.Id == id);
         }
         public async Task<List<Booking>> GetAllAsync()
         {

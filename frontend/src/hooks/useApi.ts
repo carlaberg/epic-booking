@@ -27,7 +27,7 @@ export const apiFetcher = async <T = any>({
 }: ApiFetcherProps): Promise<T> => {
   let options: RequestInit = {
     headers: {
-      // Authorization: `Bearer ${token}`,
+      Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyYjhmZmExMC0zMjA2LTQ2YzUtYWE5Yy03NTQzODM5ZWVhZDMiLCJ1bmlxdWVfbmFtZSI6ImNhbGxlc2JyZXZib3hAaG90bWFpbC5jb20iLCJyb2xlIjoiYWRtaW4iLCJuYmYiOjE3MDM3ODQ5MDYsImV4cCI6MTcwNDM4OTcwNiwiaWF0IjoxNzAzNzg0OTA2fQ.11uzF2bh1kjWmnGPBT3YGWGsHmb1eL6YzjuArVMVlbo`,
       "Content-Type": "application/json",
     },
   };

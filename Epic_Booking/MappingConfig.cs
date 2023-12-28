@@ -13,6 +13,7 @@ namespace Epic_Booking
             
             CreateMap<Booking, BookingCreateDTO>().ReverseMap();
             CreateMap<Booking, BookingUpdateDTO>().ReverseMap();
+            CreateMap<ApplicationUser, UserDTO>().ReverseMap();
         }
     }
 }
