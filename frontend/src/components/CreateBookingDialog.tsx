@@ -6,11 +6,10 @@ import Button from "@mui/material/Button";
 import DialogContent from "@mui/material/DialogContent";
 import { apiFetcher } from "../hooks/useApi";
 import { DateSelectArg } from "@fullcalendar/core";
-import { ApiResult } from "@/Pages/calendar";
+import { ApiResult } from "@/components/calendar";
 import { useValidation } from "@/hooks/useValidation/useValidation";
 import DialogActions from "@mui/material/DialogActions";
 import FormControl from "@mui/material/FormControl";
-import FormLabel from "@mui/material/FormLabel";
 
 export interface CreateBookingDialogProps {
   open: boolean;

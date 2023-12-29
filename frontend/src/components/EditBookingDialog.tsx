@@ -5,7 +5,7 @@ import TextField from "@mui/material/TextField";
 import { apiFetcher } from "../hooks/useApi";
 import Button from "@mui/material/Button";
 import { EventApi } from "@fullcalendar/core";
-import { ApiResult } from "@/Pages/calendar";
+import { ApiResult } from "@/components/calendar";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 
@@ -26,7 +26,7 @@ export default function EditBookingDialog(props: EditBookingDialogProps) {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true}>
-      <DialogTitle>Delete event</DialogTitle>
+      <DialogTitle>Edit booking</DialogTitle>
       <DialogContent dividers>
         <TextField
           id="standard-basic"
@@ -59,7 +59,7 @@ export default function EditBookingDialog(props: EditBookingDialogProps) {
             }
           }}
         >
-          Delete event
+          Delete
         </Button>
         <Button onClick={async () => onClose()}>Cancel</Button>
         <Button
