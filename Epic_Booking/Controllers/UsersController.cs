@@ -48,8 +48,8 @@ namespace MagicVilla_VillaAPI.Controllers
                 return BadRequest(_response);
             }
 
-            var user = await _userRepo.Register(model);
-            if (user == null)
+            var registerResponse = await _userRepo.Register(model);
+            if (registerResponse == null)
             {
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
@@ -58,6 +58,7 @@ namespace MagicVilla_VillaAPI.Controllers
             }
             _response.StatusCode = HttpStatusCode.OK;
             _response.IsSuccess = true;
+            _response.Result = registerResponse;
             return Ok(_response);
         }
     }

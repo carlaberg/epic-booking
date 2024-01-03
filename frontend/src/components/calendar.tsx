@@ -6,6 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { apiFetcher, useApi } from "../hooks/useApi";
 import EditBookingDialog from "@/components/EditBookingDialog";
 import CreateBookingDialog from "@/components/CreateBookingDialog";
+import { useUser } from "@/hooks/useUser/useUser";
 
 export interface ApiResult<T = any> {
   errorMessages: string[];
@@ -15,12 +16,16 @@ export interface ApiResult<T = any> {
 }
 
 export interface Booking {
+  id: string;
   title: string;
   start: Date;
   end: Date;
+  creatorId: string;
+  display?: string;
 }
 
 export default function Calendar() {
+  const user = useUser();
   const { data: bookings, error } = useApi<ApiResult<Booking[]>>({
     path: "/bookings",
   });
@@ -31,12 +36,18 @@ export default function Calendar() {
   );
   const [selectedEvent, setSelectedEvent] = useState<DateSelectArg | undefined>(undefined);
 
+  const formatedBookings: Booking[] = bookings?.result.map((booking) => {
+    if (booking.creatorId != user?.nameid) {
+      booking.display = 'background'
+    }
+    return booking;
+  });
   return (
     <>
       <FullCalendar
         plugins={[interactionPlugin, timeGridPlugin]}
         initialView="timeGridWeek"
-        events={bookings?.result}
+        events={formatedBookings}
         selectMirror
         selectable
         // eventAdd={(event) => console.log("event added", event)}
@@ -52,6 +63,7 @@ export default function Calendar() {
         }}
         eventChange={async (arg) => {
           try {
+            console.log("event id", arg.event);
             apiFetcher({
               path: `/bookings/${arg.event.id}`,
               method: "PUT",

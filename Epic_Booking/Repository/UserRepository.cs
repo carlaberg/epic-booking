@@ -39,6 +39,28 @@ namespace Epic_Booking.Repository
             return false;
         }
 
+        private async Task<string> CreateToken(ApplicationUser user)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(secretKey);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.UserName.ToString()),
+                    new Claim(ClaimTypes.Role, roles.FirstOrDefault())
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+
         public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO)
         {
             var user = _db.ApplicationUsers
@@ -57,40 +79,23 @@ namespace Epic_Booking.Repository
             }
 
             //if user was found generate JWT Token
-            var roles = await _userManager.GetRolesAsync(user);
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(secretKey);
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.UserName.ToString()),
-                    new Claim(ClaimTypes.Role, roles.FirstOrDefault())
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-
-            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var token = await CreateToken(user);
             LoginResponseDTO loginResponseDTO = new LoginResponseDTO()
             {
-                Token = tokenHandler.WriteToken(token),
+                Token = token,
                 User = _mapper.Map<UserDTO>(user),
-
             };
             return loginResponseDTO;
         }
 
-        public async Task<UserDTO> Register(RegisterationRequestDTO registerationRequestDTO)
+        public async Task<RegisterResponseDTO> Register(RegisterationRequestDTO registerationRequestDTO)
         {
             ApplicationUser user = new()
             {
                 UserName = registerationRequestDTO.UserName,
                 Email = registerationRequestDTO.UserName,
                 NormalizedEmail = registerationRequestDTO.UserName.ToUpper(),
-                Name = registerationRequestDTO.Name
+                Name = registerationRequestDTO.Name,
             };
 
             try
@@ -101,12 +106,18 @@ namespace Epic_Booking.Repository
                     if (!_roleManager.RoleExistsAsync("admin").GetAwaiter().GetResult())
                     {
                         await _roleManager.CreateAsync(new IdentityRole("admin"));
-                        await _roleManager.CreateAsync(new IdentityRole("customer"));
+                        await _roleManager.CreateAsync(new IdentityRole("user"));
                     }
                     await _userManager.AddToRoleAsync(user, "admin");
                     var userToReturn = _db.ApplicationUsers
                         .FirstOrDefault(u => u.UserName == registerationRequestDTO.UserName);
-                    return _mapper.Map<UserDTO>(userToReturn);
+
+
+                    return new RegisterResponseDTO()
+                    {
+                        Token = await CreateToken(user),
+                        User = _mapper.Map<UserDTO>(userToReturn),
+                    };
 
                 }
             }
@@ -114,8 +125,13 @@ namespace Epic_Booking.Repository
             {
 
             }
-
-            return new UserDTO();
+            var  token = await CreateToken(user);
+            RegisterResponseDTO registerResponse = new RegisterResponseDTO()
+            {
+                Token = token,
+                User = _mapper.Map<UserDTO>(user),
+            };
+            return  registerResponse;
         }
     }
 }

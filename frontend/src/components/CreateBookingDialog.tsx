@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import DialogContent from "@mui/material/DialogContent";
 import { apiFetcher } from "../hooks/useApi";
 import { DateSelectArg } from "@fullcalendar/core";
-import { ApiResult } from "@/components/calendar";
+import { ApiResult, Booking } from "@/components/calendar";
 import { useValidation } from "@/hooks/useValidation/useValidation";
 import DialogActions from "@mui/material/DialogActions";
 import FormControl from "@mui/material/FormControl";
@@ -97,14 +97,14 @@ export default function CreateBookingDialog(props: CreateBookingDialogProps) {
                 end: selection?.endStr,
               };
 
-              const response = await apiFetcher<ApiResult>({
+              const response = await apiFetcher<ApiResult<Booking>>({
                 path: "/bookings",
                 method: "POST",
                 body: booking,
               });
 
               if (response.isSuccess) {
-                selection?.view.calendar.addEvent(booking);
+                selection?.view.calendar.addEvent({id: response.result.id, ...booking});
                 selection?.view.calendar.unselect();
                 onClose();
                 setFormState(initialFormState);

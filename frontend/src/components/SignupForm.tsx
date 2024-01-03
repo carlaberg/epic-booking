@@ -12,6 +12,10 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { apiFetcher } from '@/hooks/useApi';
+import { ApiResult } from './calendar';
+import Cookies from 'js-cookie';
+import { useRouter } from 'next/router';
 
 function Copyright(props: any) {
   return (
@@ -30,13 +34,30 @@ function Copyright(props: any) {
 const defaultTheme = createTheme();
 
 export default function SignUp() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const router = useRouter();
+  
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     console.log({
       email: data.get('email'),
       password: data.get('password'),
     });
+
+    const response = await apiFetcher<ApiResult>({
+      path: "/api/UsersAuth/register",
+      method: "POST",
+      body: {
+        username: data.get("email"),
+        password: data.get("password"),
+        name: `${data.get("firstName")} ${data.get("lastName")}`,
+      },
+    });
+
+    if (response.isSuccess) {
+      Cookies.set("token", response.result.token);
+      router.push("/bookings");
+    }
   };
 
   return (
@@ -118,7 +139,7 @@ export default function SignUp() {
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link href="/login" variant="body2">
                   Already have an account? Sign in
                 </Link>
               </Grid>

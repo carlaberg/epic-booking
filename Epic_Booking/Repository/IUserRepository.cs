@@ -7,6 +7,6 @@ namespace Epic_Booking.Repository.IRepository
     {
         bool IsUniqueUser(string username);
         Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO);
-        Task<UserDTO> Register(RegisterationRequestDTO registerationRequestDTO);
+        Task<RegisterResponseDTO> Register(RegisterationRequestDTO registerationRequestDTO);
     }
 }
