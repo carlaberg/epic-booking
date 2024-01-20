@@ -9,10 +9,6 @@ on:
       - main
   workflow_dispatch:
 
-defaults:
- run:
-  working-directory: ./frontend
-
 env: 
   BACKEND_HOST: https://epic-booking.azurewebsites.net
 
@@ -36,9 +32,7 @@ jobs:
 
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
-
-      - name: Print working directory
-        run: echo pwd
+        working-directory: ./frontend
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
