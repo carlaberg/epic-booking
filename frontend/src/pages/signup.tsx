@@ -1,5 +1,5 @@
 ﻿import SignupPage from '../components/SignupPage'
 
-export default function Bookings() {
+export default function Signup() {
     return <SignupPage />
 }
